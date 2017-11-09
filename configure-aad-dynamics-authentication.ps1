@@ -1,5 +1,6 @@
 # https://community.dynamics.com/nav/b/dynamicsnavcloudfronts/archive/2017/08/16/deploy-a-microsoft-dynamics-nav-database-to-azure-sql-database
 # https://docs.microsoft.com/en-us/azure/sql-database/sql-database-aad-authentication-configure
+# https://msdn.microsoft.com/en-us/library/dn414569(v=nav.90).aspx
 ### azure configuration ###
 $rgname = 'aad-dynamics-rg'
 $sqlsrv = 'vandelaysql.database.windows.net'
@@ -12,7 +13,6 @@ Add-AzureRmAccount
 # set the active directory administrator for the sql server
 Set-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $rgname -ServerName $sqlsrv -DisplayName $navemail
 
-# https://msdn.microsoft.com/en-us/library/dn414569(v=nav.90).aspx
 ### microsoft dynamics nav server configuration ###
 import-module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.ps1'
 $navinst = 'DynamicsNAV101'
