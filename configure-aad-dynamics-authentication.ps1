@@ -18,10 +18,6 @@ import-module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.
 $navinst = 'DynamicsNAV101'
 $navsrv = 'MicrosoftDynamicsNavServer$DynamicsNAV101'
 
-# import the license file
-$license = 'C:\nav\dvd\SQLDemoDatabase\CommonAppData\Microsoft\Microsoft Dynamics NAV\100\Database\Cronus.flf'
-Import-NAVServerLicense -ServerInstance $navinst -LicenseFile $license -Database NavDatabase -Force
-
 # generate a new nav encryption key
 $keylocation = 'C:\nav.key'
 $keycreds = (Get-Credential).Password # enter a new password for securing the encryption key here
@@ -64,6 +60,10 @@ Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $val
 
 # restart the nav server instance
 Set-NavServerInstance $navsrv -restart
+
+# import the license file
+$license = 'C:\nav\dvd\SQLDemoDatabase\CommonAppData\Microsoft\Microsoft Dynamics NAV\100\Database\Cronus.flf'
+Import-NAVServerLicense -ServerInstance $navinst -LicenseFile $license -Database NavDatabase -Force
 
 # add nav user
 New-NAVServerUser -ServerInstance $navinst -UserName $navusr -AuthenticationEmail $navemail -LicenseType Full -State Enabled

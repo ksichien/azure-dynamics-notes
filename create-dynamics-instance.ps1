@@ -11,7 +11,7 @@ $dbcreds = (Get-Credential) # sql server administrator credentials
 $dbinst = ''
 $dbname = 'Demo Database NAV (10-0)'
 $dbsrv = 'vandelaysql.database.windows.net'
-$svcacc = 'ssadadmin@vandelayindustries.com'
+$svcacc = 'User'
 $svccreds = (Get-Credential) # dynamics nav service user credentials
 $svcct = '40-character-string-from-the-certificate-used-with-IIS-to-enable-SSL-on-the-webclient'
 
