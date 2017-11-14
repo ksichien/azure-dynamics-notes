@@ -7,7 +7,6 @@ $mgmtsvc = 7145
 $clientsvc = 7146
 $soapsvc = 7147
 $odatasvc = 7148
-$dbcreds = (Get-Credential) # sql server administrator credentials
 $dbinst = ''
 $dbname = 'Demo Database NAV (10-0)'
 $dbsrv = 'vandelaysql.database.windows.net'
@@ -17,7 +16,7 @@ $svcct = '40-character-string-from-the-certificate-used-with-IIS-to-enable-SSL-o
 
 # create new nav server instance
 New-NAVServerInstance -ServerInstance $navinst -ManagementServicesPort $mgmtsvc -ClientServicesPort $clientsvc -SOAPServicesPort $soapsvc -ODataServicesPort $odatasvc `
--DatabaseCredentials $dbcreds -DatabaseInstance $dbinst -DatabaseName $dbname -DatabaseServer $dbsrv -ServiceAccount $svcacc -ServiceAccountCredential $svccreds `
+-DatabaseInstance $dbinst -DatabaseName $dbname -DatabaseServer $dbsrv -ServiceAccount $svcacc -ServiceAccountCredential $svccreds `
 -ServicesCertificateThumbprint $svcct
 
 # create new web server instance
