@@ -4,7 +4,6 @@
 ### azure configuration ###
 $rgname = 'aad-dynamics-rg'
 $sqlsrv = 'vandelaysql.database.windows.net'
-$navusr = 'ssadadmin'
 $navemail = 'ssadadmin@vandelayindustries.com'
 
 # log in to azure
@@ -14,7 +13,7 @@ Add-AzureRmAccount
 Set-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $rgname -ServerName $sqlsrv -DisplayName $navemail
 
 ### microsoft dynamics nav server configuration ###
-import-module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.ps1'
+Import-Module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.ps1'
 $navinst = 'DynamicsNAV101'
 $navsrv = 'MicrosoftDynamicsNavServer$DynamicsNAV101'
 
@@ -44,8 +43,8 @@ Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $val
 
 # set client services credential type
 $key = 'ClientServicesCredentialType'
-$value = 'AccessControlService'
-Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $value
+$csct = 'AccessControlService'
+Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $csct
 
 # set azure app id uri
 $key = 'AppIdUri'
@@ -66,16 +65,37 @@ $license = 'C:\nav\dvd\SQLDemoDatabase\CommonAppData\Microsoft\Microsoft Dynamic
 Import-NAVServerLicense -ServerInstance $navinst -LicenseFile $license -Database NavDatabase -Force
 
 # add nav user
+$navusr = 'ssadadmin'
 New-NAVServerUser -ServerInstance $navinst -UserName $navusr -AuthenticationEmail $navemail -LicenseType Full -State Enabled
 New-NAVServerUserPermissionSet -PermissionSetId 'SUPER' -ServerInstance $navinst -UserName $navusr
 
-### microsoft dynamics nav web server components ###
-# file location: C:\inetpub\wwwroot\DynamicsNAV101\web.config
-Write-Output ClientCredentialType = AccessControlService
-Write-Output ACSUri = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri"
+### client configuration ###
+$dnsidentity = 'nav.vandelayindustries.com'
+$websrv = "https://$dnsidentity/$navinst/WebClient"
 
-### microsoft dynamics nav windows client ###
-# file location: %appdata%\Microsoft\Microsoft Dynamics NAV\100\ClientUserSettings.config
-$websrv = "https://nav.vandelayindustries.com/$navinst/WebClient"
-Write-Output ClientCredentialType = AccessControlService
-Write-Output ACSUri = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri%26wreply=$websrv"
+# microsoft dynamics nav web server
+$iisconfig = "C:\inetpub\wwwroot\$navinst\web.config"
+$doc = (Get-Content $iisconfig) -as [Xml]
+$obj1 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ServerInstance'}
+$obj1.value = $navinst
+$obj2 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
+$obj2.value = $csct
+$obj3 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'DnsIdentity'}
+$obj3.value = $dnsidentity
+$obj4 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
+$obj4.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri"
+$doc.Save($iisconfig)
+iisreset
+
+# microsoft dynamics nav windows client
+$clientconfig = "$env:appdata\Microsoft\Microsoft Dynamics NAV\100\ClientUserSettings.config"
+$doc = (Get-Content $clientconfig) -as [Xml]
+$obj1 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ServerInstance'}
+$obj1.value = $navinst
+$obj2 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
+$obj2.value = $csct
+$obj3 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ACSUri'}
+$obj3.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri%26wreply=$websrv"
+$obj4 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'DnsIdentity'}
+$obj4.value = $dnsidentity
+$doc.Save($clientconfig)
