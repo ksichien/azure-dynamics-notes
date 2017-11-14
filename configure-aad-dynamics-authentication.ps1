@@ -41,6 +41,16 @@ $key = 'TrustSQLServerCertificate'
 $value = 'False'
 Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $value
 
+# enable ssl for soap services
+$key = 'SOAPServicesSSLEnabled'
+$value = 'True'
+Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $value
+
+# enable ssl for odata services
+$key = 'ODataServicesSSLEnabled'
+$value = 'True'
+Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $value
+
 # set client services credential type
 $key = 'ClientServicesCredentialType'
 $csct = 'AccessControlService'
@@ -70,6 +80,7 @@ New-NAVServerUser -ServerInstance $navinst -UserName $navusr -AuthenticationEmai
 New-NAVServerUserPermissionSet -PermissionSetId 'SUPER' -ServerInstance $navinst -UserName $navusr
 
 ### client configuration ###
+$csp = 7146
 $dnsidentity = 'nav.vandelayindustries.com'
 $websrv = "https://$dnsidentity/$navinst/WebClient"
 
@@ -78,12 +89,14 @@ $iisconfig = "C:\inetpub\wwwroot\$navinst\web.config"
 $doc = (Get-Content $iisconfig) -as [Xml]
 $obj1 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ServerInstance'}
 $obj1.value = $navinst
-$obj2 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
-$obj2.value = $csct
-$obj3 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'DnsIdentity'}
-$obj3.value = $dnsidentity
-$obj4 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
-$obj4.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri"
+$obj2 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesPort'}
+$obj2.value = $csp
+$obj3 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
+$obj3.value = $csct
+$obj4 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'DnsIdentity'}
+$obj4.value = $dnsidentity
+$obj5 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
+$obj5.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri"
 $doc.Save($iisconfig)
 iisreset
 
@@ -92,10 +105,12 @@ $clientconfig = "$env:appdata\Microsoft\Microsoft Dynamics NAV\100\ClientUserSet
 $doc = (Get-Content $clientconfig) -as [Xml]
 $obj1 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ServerInstance'}
 $obj1.value = $navinst
-$obj2 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
-$obj2.value = $csct
-$obj3 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ACSUri'}
-$obj3.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri%26wreply=$websrv"
+$obj2 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ClientServicesPort'}
+$obj2.value = $csp
+$obj3 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
+$obj3.value = $csct
 $obj4 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'DnsIdentity'}
 $obj4.value = $dnsidentity
+$obj5 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ACSUri'}
+$obj5.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri%26wreply=$websrv"
 $doc.Save($clientconfig)
