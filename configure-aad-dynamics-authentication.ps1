@@ -76,11 +76,11 @@ $websrv = "https://$dnsidentity/$navinst/WebClient"
 # microsoft dynamics nav web server
 $iisconfig = "C:\inetpub\wwwroot\$navinst\web.config"
 $doc = (Get-Content $iisconfig) -as [Xml]
-$obj1 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ServerInstance'}
+$obj1 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ServerInstance'}
 $obj1.value = $navinst
 $obj2 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
 $obj2.value = $csct
-$obj3 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'DnsIdentity'}
+$obj3 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'DnsIdentity'}
 $obj3.value = $dnsidentity
 $obj4 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
 $obj4.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri"
