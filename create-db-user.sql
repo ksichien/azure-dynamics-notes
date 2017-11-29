@@ -1,5 +1,6 @@
 -- in master
-create login [avandelay] with password = 'P@ssword!'
+create login [avandelay] with password = 'P@ssword!';
+create user [avandelay] from login [avandelay];
 -- in db
 create user [avandelay] from login [avandelay];
 alter role db_owner add member [avandelay]; -- debugging with breakpoints
