@@ -14,6 +14,10 @@ $svcacc = 'User'
 $svccreds = (Get-Credential) # dynamics nav service user credentials
 $svcct = '40-character-string-from-the-certificate-used-with-IIS-to-enable-SSL-on-the-webclient'
 
+# prerequisites
+DISM /Online /Enable-Feature /FeatureName:NetFx3 /All
+Install-WindowsFeature -Name Search-Service
+
 # create new nav server instance
 New-NAVServerInstance -ServerInstance $navinst -ManagementServicesPort $mgmtsvc -ClientServicesPort $clientsvc -SOAPServicesPort $soapsvc -ODataServicesPort $odatasvc `
 -DatabaseInstance $dbinst -DatabaseName $dbname -DatabaseServer $dbsrv -ServiceAccount $svcacc -ServiceAccountCredential $svccreds `
