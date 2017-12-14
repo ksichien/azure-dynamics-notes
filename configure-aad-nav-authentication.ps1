@@ -19,12 +19,12 @@ $navsrv = 'MicrosoftDynamicsNavServer$DynamicsNAV101'
 
 # generate a new nav encryption key
 $keylocation = 'C:\nav.key'
-$keycreds = (Get-Credential).Password # enter a new password for securing the encryption key here
+$keycreds = (Get-Credential -Message 'Please provide the NAV Encryption Key password').Password # enter a new password for securing the encryption key here
 New-NAVEncryptionKey -KeyPath $keylocation -Password $keycreds
 
 # import the nav encryption key
 $sqldb = 'Demo Database NAV (10-0)'
-$sqldbcreds = (Get-Credential) # enter sql db admin credentials here
+$sqldbcreds = (Get-Credential-Message 'Please provide the Azure SQL Server Admin username and password') # enter sql db admin credentials here
 Import-NAVEncryptionKey -ServerInstance $navinst -KeyPath $keylocation -ApplicationDatabaseServer $sqlsrv `
 -ApplicationDatabaseName $sqldb -ApplicationDatabaseCredentials $sqldbcreds -Password $keycreds
 
