@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 # https://docs.microsoft.com/en-us/azure/active-directory/connect/active-directory-aadconnectsync-configure-filtering
 
 # first, disable the scheduler

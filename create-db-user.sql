@@ -1,10 +1,13 @@
 -- in master
-create login [avandelay] with password = 'P@ssword!';
-create user [avandelay] from login [avandelay];
--- in db
-create user [avandelay] from login [avandelay];
-alter role db_owner add member [avandelay]; -- debugging with breakpoints
-alter role db_ddladmin add member [avandelay]; -- alter create drop
-alter role db_datawriter add member [avandelay]; -- insert update delete
-alter role db_datareader add member [avandelay]; -- select
-grant showplan to [avandelay]; -- required if not a member of db_owner
+CREATE LOGIN [avandelay] WITH PASSWORD = 'P@ssword!';
+CREATE USER [avandelay] FROM LOGIN [avandelay];
+-- in dynav database
+CREATE USER [avandelay] FROM LOGIN [avandelay];
+-- https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles
+ALTER ROLE db_owner ADD MEMBER [avandelay]; -- all permissions
+ALTER ROLE db_backupoperator ADD MEMBER [avandelay]; -- BACKUP
+ALTER ROLE db_accessadmin ADD MEMBER [avandelay]; -- ALTER ANY USER
+ALTER ROLE db_securityadmin ADD MEMBER [avandelay]; -- ALTER ANY ROLE
+ALTER ROLE db_ddladmin ADD MEMBER [avandelay]; -- CREATE ALTER DROP
+ALTER ROLE db_datawriter ADD MEMBER [avandelay]; -- INSERT UPDATE DELETE
+ALTER ROLE db_datareader ADD MEMBER [avandelay]; -- SELECT

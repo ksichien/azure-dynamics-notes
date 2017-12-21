@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 # https://community.dynamics.com/nav/b/dynamicsnavcloudfronts/archive/2017/08/16/deploy-a-microsoft-dynamics-nav-database-to-azure-sql-database
 # https://docs.microsoft.com/en-us/azure/sql-database/sql-database-aad-authentication-configure
 # https://msdn.microsoft.com/en-us/library/dn414569(v=nav.90).aspx
@@ -14,19 +15,19 @@ Set-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $rgname -Ser
 
 ### microsoft dynamics nav server configuration ###
 Import-Module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.ps1'
-$navinst = 'DynamicsNAV101'
-$navsrv = 'MicrosoftDynamicsNavServer$DynamicsNAV101'
+$navinst = 'DynamicsNAV100'
+$navsrv = 'MicrosoftDynamicsNavServer$DynamicsNAV100'
 
 # generate a new nav encryption key
 $keylocation = 'C:\nav.key'
-$keycreds = (Get-Credential -Message 'Please provide the NAV Encryption Key password').Password # enter a new password for securing the encryption key here
+$keycreds = (Get-Credential -Message 'Please provide the NAV Encryption Key password').Password
 New-NAVEncryptionKey -KeyPath $keylocation -Password $keycreds
 
 # import the nav encryption key
 $sqldb = 'Demo Database NAV (10-0)'
-$sqldbcreds = (Get-Credential-Message 'Please provide the Azure SQL Server Admin username and password') # enter sql db admin credentials here
+$sqldbcreds = (Get-Credential -Message 'Please provide the Azure SQL Server Admin username and password')
 Import-NAVEncryptionKey -ServerInstance $navinst -KeyPath $keylocation -ApplicationDatabaseServer $sqlsrv `
--ApplicationDatabaseName $sqldb -ApplicationDatabaseCredentials $sqldbcreds -Password $keycreds
+-ApplicationDatabaseName $sqldb -ApplicationDatabaseCredentials $sqldbcreds -Password $keycreds -Force
 
 # configure sql server authentication
 Set-NAVServerConfiguration -ServerInstance $navinst -DatabaseCredentials $sqldbcreds
@@ -80,11 +81,12 @@ New-NAVServerUser -ServerInstance $navinst -UserName $navusr -AuthenticationEmai
 New-NAVServerUserPermissionSet -PermissionSetId 'SUPER' -ServerInstance $navinst -UserName $navusr
 
 ### client configuration ###
-$csp = 7146
-$dnsidentity = 'nav.vandelayindustries.com'
-$websrv = "https://$dnsidentity/$navinst/WebClient"
+$csp = '7046'
+$dnsidentity = 'dynav.vandelayindustries.com'
 
-# microsoft dynamics nav web server
+# microsoft dynamics nav web server components
+$acsuri = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri"
+
 $iisconfig = "C:\inetpub\wwwroot\$navinst\web.config"
 $doc = (Get-Content $iisconfig) -as [Xml]
 $obj1 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ServerInstance'}
@@ -96,21 +98,27 @@ $obj3.value = $csct
 $obj4 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'DnsIdentity'}
 $obj4.value = $dnsidentity
 $obj5 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
-$obj5.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri"
+$obj5.value = $acsuri
 $doc.Save($iisconfig)
 iisreset
 
 # microsoft dynamics nav windows client
+$srv = '10.0.0.10'
+$websrv = "https://$dnsidentity/$navinst/WebClient"
+$acsuri = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri%26wreply=$websrv"
+
 $clientconfig = "$env:appdata\Microsoft\Microsoft Dynamics NAV\100\ClientUserSettings.config"
 $doc = (Get-Content $clientconfig) -as [Xml]
-$obj1 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ServerInstance'}
-$obj1.value = $navinst
-$obj2 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ClientServicesPort'}
-$obj2.value = $csp
-$obj3 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
-$obj3.value = $csct
-$obj4 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'DnsIdentity'}
-$obj4.value = $dnsidentity
-$obj5 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ACSUri'}
-$obj5.value = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri%26wreply=$websrv"
+$obj1 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'Server'}
+$obj1.value = $srv
+$obj2 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ServerInstance'}
+$obj2.value = $navinst
+$obj3 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ClientServicesPort'}
+$obj3.value = $csp
+$obj4 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
+$obj4.value = $csct
+$obj5 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'DnsIdentity'}
+$obj5.value = $dnsidentity
+$obj6 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ACSUri'}
+$obj6.value = $acsuri
 $doc.Save($clientconfig)
