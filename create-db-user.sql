@@ -11,3 +11,4 @@ ALTER ROLE db_securityadmin ADD MEMBER [avandelay]; -- ALTER ANY ROLE
 ALTER ROLE db_ddladmin ADD MEMBER [avandelay]; -- CREATE ALTER DROP
 ALTER ROLE db_datawriter ADD MEMBER [avandelay]; -- INSERT UPDATE DELETE
 ALTER ROLE db_datareader ADD MEMBER [avandelay]; -- SELECT
+GRANT showplan TO [avandelay]; -- required for nav if not a member of db_owner
