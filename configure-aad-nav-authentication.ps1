@@ -83,27 +83,29 @@ New-NAVServerUserPermissionSet -PermissionSetId 'SUPER' -ServerInstance $navinst
 ### client configuration ###
 $csp = '7046'
 $dnsidentity = 'dynav.vandelayindustries.com'
+$srv = '10.0.0.10' # public ip of server
 
 # microsoft dynamics nav web server components
 $acsuri = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri"
 
 $iisconfig = "C:\inetpub\wwwroot\$navinst\web.config"
 $doc = (Get-Content $iisconfig) -as [Xml]
-$obj1 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ServerInstance'}
-$obj1.value = $navinst
-$obj2 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesPort'}
-$obj2.value = $csp
-$obj3 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
-$obj3.value = $csct
-$obj4 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'DnsIdentity'}
-$obj4.value = $dnsidentity
-$obj5 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
-$obj5.value = $acsuri
+$obj1 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'Server'}
+$obj1.value = $srv
+$obj2 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ServerInstance'}
+$obj2.value = $navinst
+$obj3 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesPort'}
+$obj3.value = $csp
+$obj4 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ClientServicesCredentialType'}
+$obj4.value = $csct
+$obj5 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'DnsIdentity'}
+$obj5.value = $dnsidentity
+$obj6 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
+$obj6.value = $acsuri
 $doc.Save($iisconfig)
 iisreset
 
 # microsoft dynamics nav windows client
-$srv = '10.0.0.10'
 $websrv = "https://$dnsidentity/$navinst/WebClient"
 $acsuri = "https://login.windows.net/$adtenant/wsfed?wa=wsignin1.0%26wtrealm=$appiduri%26wreply=$websrv"
 
