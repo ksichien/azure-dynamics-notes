@@ -1,2 +1,2 @@
 # azure-dynamics-notes
-This is a collection of notes I'm taking for myself as I experiment with configuring Microsoft Dynamics NAV 2017 to use an Azure SQL Database with Azure Active Directory.
+This is a small collection of PowerShell & SQL scripts I've written to automate the installation and configuration of Microsoft Dynamics NAV.
