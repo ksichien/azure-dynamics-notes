@@ -65,9 +65,9 @@ Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $app
 
 # set azure ws federation login endpoint
 $key = 'WSFederationLoginEndpoint'
-$dnsidentity = 'nav.vandelayindustries.com'
 $acsuri = "https://login.windows.net/${adtenant}/wsfed?wa=wsignin1.0%26wtrealm=${appiduri}"
-$wsfed = "${ascuri}%26wreply=https://${dnsidentity}/${navinst}/WebClient"
+$dnsidentity = 'nav.vandelayindustries.com'
+$wsfed = "${acsuri}%26wreply=https://${dnsidentity}/${navinst}/WebClient"
 Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $wsfed
 
 # set azure federation metadata location
