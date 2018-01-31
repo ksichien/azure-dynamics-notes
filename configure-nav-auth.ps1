@@ -63,7 +63,14 @@ $adtenant = 'vandelayindustries.onmicrosoft.com'
 $appiduri = "https://${adtenant}/36-character-string-from-azure"
 Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $appiduri
 
-# set federation metadata location
+# set azure ws federation login endpoint
+$key = 'WSFederationLoginEndpoint'
+$dnsidentity = 'nav.vandelayindustries.com'
+$acsuri = "https://login.windows.net/${adtenant}/wsfed?wa=wsignin1.0%26wtrealm=${appiduri}"
+$wsfed = "${ascuri}%26wreply=https://${dnsidentity}/${navinst}/WebClient"
+Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $wsfed
+
+# set azure federation metadata location
 $key = 'ClientServicesFederationMetadataLocation'
 $value = "https://login.windows.net/${adtenant}/FederationMetadata/2007-06/FederationMetadata.xml"
 Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $value
@@ -82,13 +89,10 @@ New-NAVServerUserPermissionSet -PermissionSetId 'SUPER' -ServerInstance $navinst
 
 ### client configuration ###
 $csp = '7046'
-$dnsidentity = 'nav.vandelayindustries.com'
 $srv = '10.10.10.10' # public ip of server
 $spn = "(net.tcp://${srv}:${csp}/${navinst}/Service)=NoSpn"
 
 # microsoft dynamics nav web server components
-$acsuri = "https://login.windows.net/${adtenant}/wsfed?wa=wsignin1.0%26wtrealm=${appiduri}"
-
 $iisconfig = "C:\inetpub\wwwroot\${navinst}\web.config"
 $doc = (Get-Content $iisconfig) -as [Xml]
 $obj1 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'Server'}
@@ -104,16 +108,13 @@ $obj5.value = $spn
 $obj6 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'DnsIdentity'}
 $obj6.value = $dnsidentity
 $obj7 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
-$obj7.value = "https://login.windows.net/${adtenant}/wsfed?wa=wsignin1.0%26wtrealm=${appiduri}"
+$obj7.value = $acsuri
 $obj8 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'HelpServer'}
 $obj8.value = $srv
 $doc.Save($iisconfig)
 iisreset
 
 # microsoft dynamics nav windows client
-$websrv = "https://${dnsidentity}/${navinst}/WebClient"
-$acsuri = "https://login.windows.net/${adtenant}/wsfed?wa=wsignin1.0%26wtrealm=${appiduri}%26wreply=${websrv}"
-
 $clientconfig = "${env:appdata}\Microsoft\Microsoft Dynamics NAV\100\ClientUserSettings.config"
 $doc = (Get-Content $clientconfig) -as [Xml]
 $obj1 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'Server'}
@@ -129,7 +130,7 @@ $obj5.value = $spn
 $obj6 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'DnsIdentity'}
 $obj6.value = $dnsidentity
 $obj7 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'ACSUri'}
-$obj7.value = "https://login.windows.net/${adtenant}/wsfed?wa=wsignin1.0%26wtrealm=${appiduri}%26wreply=https://${dnsidentity}/${navinst}/WebClient"
+$obj7.value = $wsfed
 $obj8 = $doc.configuration.appsettings.add | where-object {$_.Key -eq 'HelpServer'}
 $obj8.value = $srv
 $doc.Save($clientconfig)
