@@ -1,23 +1,24 @@
 #!/usr/bin/env pwsh
 Import-Module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.ps1'
 
-$limit = 50 # sessions allowed by the nav license
-$warning = 0.8 # percentage at which a warning will be issued
+$limit_value = 50 # sessions allowed by the nav license
+$warning_percentage = 80 # percentage at which a warning will be issued
+$warning_value = [int]($limit*($warning_percentage/100))
+
 $navinstances = @('nav100-live','nav100-dev')
 
 foreach ($navinstance in $navinstances) {
-    $count = (get-NAVServerSession -ServerInstance $navinstance).count
+    $count_value = (get-NAVServerSession -ServerInstance $navinstance).count
     write-output "current nav instance: ${navinstance}"
-    if ($count -ne 0) {
-        $maxpct = [int]($limit*$warning)
-        $currentpct = [int](($count/$limit)*100)
-        write-output "total number of user sessions allowed by the nav license: ${limit}"
-        write-output "maximum number of user sessions allowed before a warning is issued: ${maxpct}"
-        write-output "current number of user sessions: ${count}"
-        if ($count -ge $limit ) {
+    if ($count_value -ne 0) {
+        $count_percentage = [int](($count_value/$limit_value)*100)
+        write-output "total number of user sessions allowed by the nav license: ${limit_value}"
+        write-output "maximum number of user sessions allowed before a warning is issued: ${warning_value}"
+        write-output "current number of user sessions: ${count_value}"
+        if ($count_value -ge $limit_value) {
             write-output 'the current number of user sessions has reached the limit allowed by the nav license'
         }
-        elseif ($currentpct -ge $maxpct) {
+        elseif ($count_percentage -ge $warning_percentage) {
             write-output 'the current number of user sessions has exceeded the normal range'
         }
         else {
