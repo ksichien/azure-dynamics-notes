@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 import-module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.ps1'
-$navinstances = @('DynamicsNAV100')
+$navinstances = @('nav100-live','nav100-dev')
 $domain = 'vandelayindustries.com'
 $users = @('art','ssadadmin')
 $permissions = 'SUPER'

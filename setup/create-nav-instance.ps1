@@ -1,9 +1,9 @@
 #!/usr/bin/env pwsh
 Import-Module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.ps1'
 
-$navinst = 'DynamicsNAV100'
-$navsrv = 'MicrosoftDynamicsNavServer$DynamicsNAV100'
-$webinst = 'DynamicsNAV100'
+$navinst = 'nav100-live'
+$navsrv = 'MicrosoftDynamicsNavServer$nav100-live'
+$webinst = 'nav100-live'
 $mgmtsvc = 7045
 $clientsvc = 7046
 $soapsvc = 7047

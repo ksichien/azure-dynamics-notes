@@ -15,8 +15,8 @@ Set-AzureRmSqlServerActiveDirectoryAdministrator -ResourceGroupName $rgname -Ser
 
 ### microsoft dynamics nav server configuration ###
 Import-Module 'C:\Program Files\Microsoft Dynamics NAV\100\Service\NavAdminTool.ps1'
-$navinst = 'DynamicsNAV100'
-$navsrv = 'MicrosoftDynamicsNavServer$DynamicsNAV100'
+$navinst = 'nav100-live'
+$navsrv = 'MicrosoftDynamicsNavServer$nav100-live'
 
 # generate a new nav encryption key
 $keylocation = 'C:\nav.key'
@@ -67,7 +67,7 @@ Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $app
 $key = 'WSFederationLoginEndpoint'
 $acsuri = "https://login.windows.net/${adtenant}/wsfed?wa=wsignin1.0%26wtrealm=${appiduri}"
 $dnsidentity = 'nav.vandelayindustries.com'
-$wsfed = "${acsuri}%26wreply=https://${dnsidentity}/${navinst}/WebClient"
+$wsfed = "${acsuri}%26wreply=https://${dnsidentity}/${navinst}/WebClient/SignIn.aspx"
 Set-NAVServerConfiguration -ServerInstance $navinst -keyname $key -keyvalue $wsfed
 
 # set azure federation metadata location
@@ -89,8 +89,13 @@ New-NAVServerUserPermissionSet -PermissionSetId 'SUPER' -ServerInstance $navinst
 
 ### client configuration ###
 $csp = '7046'
-$srv = '10.10.10.10' # public ip of server
+$srv = 'localhost'
 $spn = "(net.tcp://${srv}:${csp}/${navinst}/Service)=NoSpn"
+
+##### NOTE: when using a management services port other than 7045, a new key will need to be added to the IIS web.config file #####
+#$msp = 7045
+#$obj8 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ManagementServicesPort'}
+#$obj8.value = $msp
 
 # microsoft dynamics nav web server components
 $iisconfig = "C:\inetpub\wwwroot\${navinst}\web.config"
@@ -107,10 +112,8 @@ $obj5 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'U
 $obj5.value = $spn
 $obj6 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'DnsIdentity'}
 $obj6.value = $dnsidentity
-$obj7 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'ACSUri'}
-$obj7.value = $acsuri
-$obj8 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'HelpServer'}
-$obj8.value = $srv
+$obj7 = $doc.configuration.DynamicsNAVSettings.add | where-object {$_.Key -eq 'HelpServer'}
+$obj7.value = $srv
 $doc.Save($iisconfig)
 iisreset
 

@@ -1,13 +1,15 @@
 # azure-dynamics-scripts
-This is a small collection of PowerShell & SQL scripts I've written to automate the installation and configuration of Microsoft Dynamics NAV.
+This is a small collection of PowerShell & SQL scripts I've written to automate the installation, configuration and maintenance of Microsoft Dynamics NAV.
 
 - configuration:
     - configure-aad-sync
     - configure-nav-auth
-- database scripts:
+- database:
     - create-db-user
     - get-db-role-members
     - rename-db
+- monitoring:
+    - check-active-connections
 - setup:
     - create-nav-instance
     - create-nav-user
