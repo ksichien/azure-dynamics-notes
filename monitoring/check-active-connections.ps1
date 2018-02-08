@@ -7,25 +7,41 @@ $warning_value = [int]($limit*($warning_percentage/100))
 
 $navinstances = @('nav100-live','nav100-dev')
 
+$recipient = 'nav-admins@vandelayindustries.com'
+
+function mail-nav-report ([string]$to,[string]$subject,[string]$body) {
+    $from = 'hourly-nav-report@vandelayindustries.com'
+    $smtpserver = 'smtp.vandelayindustries.com'
+    $smtpport = '587'
+    $securepassword = ConvertTo-SecureString 'P@ssword!' -AsPlainText -Force
+    $credential = New-Object System.Management.Automation.PSCredential ('hourly-nav-report', $securepassword)
+
+    Send-MailMessage -From $from -to $to -Subject $subject `
+    -Body $body -SmtpServer $smtpserver -port $smtpport -UseSsl `
+    -Credential $credential -BodyAsHtml
+}
+
 foreach ($navinstance in $navinstances) {
-    $count_value = (get-NAVServerSession -ServerInstance $navinstance).count
-    write-output "current nav instance: ${navinstance}"
+    $count_value = [int](get-NAVServerSession -ServerInstance $navinstance).count
+    $subject = "Hourly NAV Report for ${navinstance}"
+    $body = "<h2>Current nav instance: ${navinstance}</h2>"
     if ($count_value -ne 0) {
         $count_percentage = [int](($count_value/$limit_value)*100)
-        write-output "total number of user sessions allowed by the nav license: ${limit_value}"
-        write-output "maximum number of user sessions allowed before a warning is issued: ${warning_value}"
-        write-output "current number of user sessions: ${count_value}"
+        $body += "<p>Total number of user sessions allowed by the nav license: ${limit_value}</p>"
+        $body += "<p>Maximum number of user sessions allowed before a warning is issued: ${warning_value}</p>"
+        $body += "<p>Current number of user sessions: ${count_value}</p>"
         if ($count_value -ge $limit_value) {
-            write-output 'the current number of user sessions has reached the limit allowed by the nav license'
+            $body += "<p>The current number of user sessions has reached the limit allowed by the nav license.</p>"
         }
         elseif ($count_percentage -ge $warning_percentage) {
-            write-output 'the current number of user sessions has exceeded the normal range'
+            $body += "<p>The current number of user sessions has exceeded the normal range.</p>"
         }
         else {
-            write-output 'the current number of user sessions is within the normal range'
+            $body += "<p>The current number of user sessions is within the normal range.</p>"
         }
     }
     else {
-        write-output "there are currently no users connected"
+        $body += "<p>There are currently no users connected.</p>"
     }
+    mail-nav-report $recipient $subject $body
 }
