@@ -1,5 +1,7 @@
-# azure-dynamics-scripts
+# Azure Dynamics Scripts
 This is a small collection of PowerShell & SQL scripts I've written to automate the installation, configuration and maintenance of Microsoft Dynamics NAV.
+
+## Overview
 
 - configuration:
     - configure-aad-sync
